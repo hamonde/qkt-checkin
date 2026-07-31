@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>報到｜講座報到系統</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="loading">
+  <nav id="nav"></nav>
+
+  <div class="wrap">
+    <h1>現場報到</h1>
+
+    <div class="card">
+      <label for="sessionSelect">選擇場次</label>
+      <select id="sessionSelect"></select>
+    </div>
+
+    <div class="card" id="mainCard" hidden>
+      <div class="row" style="align-items:center">
+        <div style="flex:2 1 160px">
+          <div class="muted">已報到 / 總數</div>
+          <div class="stat-big"><span id="doneCount">0</span> / <span id="totalCount">0</span></div>
+        </div>
+        <div style="flex:3 1 200px">
+          <input type="text" id="search" placeholder="輸入姓名或票號搜尋…">
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button id="allInBtn" class="secondary">全部標記已報到</button>
+        <button id="allOutBtn" class="secondary">全部取消報到</button>
+      </div>
+    </div>
+
+    <div class="card" id="listCard" hidden>
+      <p class="muted">點一下大方框就完成報到，再點一次可取消。點「時間」可以手動修改。</p>
+      <ul class="list" id="list"></ul>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/checkin.js"></script>
+</body>
+</html>

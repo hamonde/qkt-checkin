@@ -1,0 +1,151 @@
+/* =========================================================
+   styles.css —— 全站樣式（手機優先設計：按鈕大、字大、好按）
+   ========================================================= */
+
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --line: #e3e6ea;
+  --text: #1d2530;
+  --muted: #6b7684;
+  --primary: #2f6fed;
+  --primary-dark: #2559c4;
+  --ok: #17a673;
+  --err: #d8453e;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 還沒確認登入前先把畫面藏起來，避免資料閃一下 */
+body.loading .wrap, body.loading #nav { visibility: hidden; }
+
+/* ---------- 上方選單 ---------- */
+#nav {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 8px 12px;
+}
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  padding: 8px 14px; border-radius: 999px; text-decoration: none;
+  color: var(--muted); font-weight: 600;
+}
+.nav-links a.active { background: var(--primary); color: #fff; }
+.nav-user { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.nav-user .email { max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- 版面 ---------- */
+.wrap { max-width: 860px; margin: 0 auto; padding: 16px 12px 80px; }
+h1 { font-size: 22px; margin: 8px 0 16px; }
+h2 { font-size: 17px; margin: 0 0 12px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+}
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row > * { flex: 1 1 140px; }
+.muted { color: var(--muted); font-size: 14px; }
+.spacer { height: 12px; }
+
+/* ---------- 表單 ---------- */
+label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+input, select, textarea, button { font-family: inherit; font-size: 16px; }
+input[type=text], input[type=email], input[type=password], input[type=date],
+input[type=number], input[type=datetime-local], select, textarea {
+  width: 100%; padding: 12px; border: 1px solid var(--line);
+  border-radius: 10px; background: #fff; color: var(--text);
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+.field { margin-bottom: 12px; }
+
+button {
+  cursor: pointer; border: none; border-radius: 10px;
+  padding: 12px 16px; font-weight: 700; background: var(--primary); color: #fff;
+  min-height: 44px;                 /* 手指好按的最小高度 */
+}
+button:active { transform: translateY(1px); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.secondary { background: #eef1f5; color: var(--text); }
+button.danger { background: #fdecec; color: var(--err); }
+button.small { padding: 8px 12px; font-size: 14px; min-height: 36px; }
+.btn-plain { background: none; color: var(--primary); padding: 6px 8px; min-height: auto; }
+.btn-full { width: 100%; }
+
+/* ---------- 清單 ---------- */
+.list { list-style: none; margin: 0; padding: 0; }
+.list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 8px; border-bottom: 1px solid var(--line);
+}
+.list li:last-child { border-bottom: none; }
+.seat {
+  flex: none; width: 36px; height: 36px; border-radius: 8px;
+  background: #eef1f5; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+}
+.grow { flex: 1; min-width: 0; }
+.name { font-weight: 600; }
+.sub { font-size: 12px; color: var(--muted); word-break: break-all; }
+
+/* 排序清單：拖曳中的樣式 */
+li.dragging { opacity: .4; }
+li.drag-over { border-top: 3px solid var(--primary); }
+.handle { cursor: grab; color: var(--muted); font-size: 20px; padding: 0 4px; }
+.arrows { display: flex; flex-direction: column; gap: 2px; }
+.arrows button { padding: 2px 8px; min-height: 22px; font-size: 12px; background: #eef1f5; color: var(--text); }
+
+/* ---------- 報到頁的大勾選 ---------- */
+.checkin-item { gap: 12px; }
+.big-check {
+  flex: none; width: 56px; height: 56px; border-radius: 14px;
+  border: 2px solid var(--line); background: #fff;
+  font-size: 26px; color: #c9ced6; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.big-check.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+.time-btn {
+  background: none; color: var(--ok); font-weight: 700; font-size: 14px;
+  padding: 2px 6px; min-height: auto; border: 1px dashed var(--ok); border-radius: 6px;
+}
+
+/* ---------- 統計數字 ---------- */
+.stat-big { font-size: 28px; font-weight: 800; }
+.badge {
+  background: var(--primary); color: #fff; border-radius: 999px;
+  padding: 2px 10px; font-size: 13px; font-weight: 700;
+}
+
+/* ---------- 提示訊息 ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: #333; color: #fff; padding: 12px 18px; border-radius: 10px;
+  opacity: 0; pointer-events: none; transition: .2s; z-index: 99; max-width: 90vw;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { background: var(--err); }
+.toast.ok { background: #333; }
+
+/* ---------- 登入頁 ---------- */
+.login-wrap { max-width: 380px; margin: 10vh auto; padding: 0 16px; }
+.login-wrap h1 { text-align: center; }
+
+details summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.scroll-x { overflow-x: auto; }

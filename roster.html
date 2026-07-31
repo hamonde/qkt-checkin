@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>名單｜講座報到系統</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="loading">
+  <nav id="nav"></nav>
+
+  <div class="wrap">
+    <h1>名單與座位編號</h1>
+
+    <!-- 選場次 -->
+    <div class="card">
+      <label for="sessionSelect">選擇場次</label>
+      <select id="sessionSelect"></select>
+    </div>
+
+    <!-- 目前名單 -->
+    <div class="card" id="rosterCard" hidden>
+      <h2>
+        這場名單
+        <span class="badge" id="countBadge">0 人</span>
+        <span class="muted" id="saveState"></span>
+      </h2>
+      <p class="muted">
+        用 ⬆⬇ 移動順序（手機好按），電腦也可以直接拖曳 ☰。
+        每次移動後會自動重新編號：座位號 1、2、3…，票號也跟著更新。
+      </p>
+      <ul class="list" id="rosterList"></ul>
+      <div class="spacer"></div>
+      <button id="exportBtn" class="secondary btn-full">匯出這場名單為 CSV（給 Canva 做票）</button>
+    </div>
+
+    <!-- 加人：既有參與者 -->
+    <div class="card" id="addCard" hidden>
+      <h2>加入既有參與者</h2>
+      <div class="field">
+        <input type="text" id="searchPerson" placeholder="輸入姓名搜尋…">
+      </div>
+      <div id="peopleList" class="scroll-x" style="max-height:260px;overflow-y:auto"></div>
+      <div class="spacer"></div>
+      <button id="addSelectedBtn" class="btn-full">把勾選的人加入這場</button>
+    </div>
+
+    <!-- 加人：全新的人 -->
+    <div class="card" id="newCard" hidden>
+      <h2>新增一位全新的參與者</h2>
+      <form id="newPersonForm">
+        <div class="row">
+          <div class="field">
+            <label for="pname">姓名</label>
+            <input type="text" id="pname" required>
+          </div>
+          <div class="field">
+            <label for="pgender">性別</label>
+            <select id="pgender">
+              <option value="">不填</option>
+              <option value="女">女</option>
+              <option value="男">男</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="pnote">備註</label>
+          <input type="text" id="pnote" placeholder="例：素食、輪椅、第一次參加">
+        </div>
+        <button type="submit" class="btn-full">新增並加入這場</button>
+      </form>
+    </div>
+
+    <!-- 匯入 CSV（補登舊場次用） -->
+    <div class="card" id="importCard" hidden>
+      <details>
+        <summary>匯入 CSV 建立整場名單（補登歷史場次用）</summary>
+        <div class="spacer"></div>
+        <p class="muted">
+          CSV 欄位順序：<b>姓名, 已報到(是/否), 報到時間(可空白)</b>。第一行可以是標題會自動略過。<br>
+          報到時間可以寫 <code>2025-08-01 14:32</code> 或只寫 <code>14:32</code>（會自動補上這場的日期）；<br>
+          留空代表「有到但沒有精確時間」。<br>
+          依姓名對應既有參與者，找不到的會自動新增一位，這樣統計才會累加到同一個人。
+        </p>
+        <div class="field">
+          <input type="file" id="csvFile" accept=".csv,text/csv">
+        </div>
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="replaceAll" style="width:20px;height:20px">
+          匯入前先清空這場現有名單
+        </label>
+        <div class="spacer"></div>
+        <div id="csvPreview"></div>
+        <button id="importBtn" class="btn-full" disabled>開始匯入</button>
+      </details>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/roster.js"></script>
+</body>
+</html>
