@@ -42,6 +42,14 @@
       </div>
       <div id="peopleList" class="scroll-x" style="max-height:260px;overflow-y:auto"></div>
       <div class="spacer"></div>
+      <div class="field">
+        <label for="addEntryType">這批人的入場時段</label>
+        <select id="addEntryType">
+          <option value="宣語">宣語入場</option>
+          <option value="攜幼">攜幼入場</option>
+          <option value="特殊">特殊入場</option>
+        </select>
+      </div>
       <button id="addSelectedBtn" class="btn-full">把勾選的人加入這場</button>
     </div>
 
@@ -64,9 +72,19 @@
             </select>
           </div>
         </div>
-        <div class="field">
-          <label for="pnote">備註</label>
-          <input type="text" id="pnote" placeholder="例：素食、輪椅、第一次參加">
+        <div class="row">
+          <div class="field">
+            <label for="pnote">備註</label>
+            <input type="text" id="pnote" placeholder="例：素食、輪椅、第一次參加">
+          </div>
+          <div class="field">
+            <label for="pEntryType">入場時段</label>
+            <select id="pEntryType">
+              <option value="宣語">宣語入場</option>
+              <option value="攜幼">攜幼入場</option>
+              <option value="特殊">特殊入場</option>
+            </select>
+          </div>
         </div>
         <button type="submit" class="btn-full">新增並加入這場</button>
       </form>
@@ -78,9 +96,11 @@
         <summary>匯入 CSV 建立整場名單（補登歷史場次用）</summary>
         <div class="spacer"></div>
         <p class="muted">
-          CSV 欄位順序：<b>姓名, 已報到(是/否), 報到時間(可空白)</b>。第一行可以是標題會自動略過。<br>
+          CSV 欄位順序：<b>姓名, 已報到(是/否), 報到時間(可空白), 入場時段(可空白)</b>。
+          第一行可以是標題會自動略過。<br>
           報到時間可以寫 <code>2025-08-01 14:32</code> 或只寫 <code>14:32</code>（會自動補上這場的日期）；<br>
           留空代表「有到但沒有精確時間」。<br>
+          入場時段填 <code>宣語</code>／<code>攜幼</code>／<code>特殊</code>，留空預設為宣語。<br>
           依姓名對應既有參與者，找不到的會自動新增一位，這樣統計才會累加到同一個人。
         </p>
         <div class="field">

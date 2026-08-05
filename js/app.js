@@ -76,11 +76,52 @@ function fromLocalInput(val) {
 
 /* ---------- 4. 票號 ---------- */
 // 例：makeTicket('0801', 15) → XYT-PRE-0801-15
+// 場次代碼只用在這裡（產生票號），畫面上的場次標題不會顯示它。
 function makeTicket(sessionCode, seatNo) {
   return `${TICKET_PREFIX}${sessionCode}-${String(seatNo).padStart(2, '0')}`;
 }
 
-/* ---------- 5. 登入檢查 ---------- */
+/* ---------- 5. 入場時段 ---------- */
+const ENTRY_TYPES = ['宣語', '攜幼', '特殊'];
+
+// 兩個時間界線（想調整時間就改這裡，全站一起生效）
+const T_XUANYU_DEADLINE = 12 * 60 + 50;   // 12:50 宣語入場的最晚報到時間
+const T_OTHER_OPEN      = 13 * 60 + 20;   // 13:20 攜幼／特殊入場開放報到
+
+// 判斷報到時間跟他的入場時段合不合，回傳顏色：
+//   green = 準時（宣語 12:50 前完成）
+//   blue  = 攜幼／特殊在 13:20 之後正常報到
+//   red   = 時間不符（宣語遲到，或攜幼／特殊在 12:50~13:20 這段還不能入場時報到）
+// 特別規則：攜幼／特殊如果 12:50 前就到，視同跟著宣語場入場，一樣給綠色。
+function checkinColor(entryType, checkedInAt) {
+  if (!checkedInAt) return '';                 // 沒有精確時間就不判斷
+  const d = new Date(checkedInAt);
+  const mins = d.getHours() * 60 + d.getMinutes();
+
+  if (entryType === '宣語') {
+    return mins <= T_XUANYU_DEADLINE ? 'green' : 'red';   // 12:50 後算遲到
+  }
+  // 攜幼／特殊
+  if (mins <= T_XUANYU_DEADLINE) return 'green';          // 提前到，跟宣語一起入場
+  if (mins >= T_OTHER_OPEN) return 'blue';                // 正常時段
+  return 'red';                                            // 還不能入場的空檔
+}
+
+// 顏色對應的說明文字（滑鼠移上去會看到）
+const COLOR_HINT = {
+  green: '準時（12:50 前完成報到）',
+  blue: '正常入場（13:20 後完成報到）',
+  red: '時間不符',
+};
+
+/* ---------- 6. 場次標題 ---------- */
+// 場次代碼不放進標題，只顯示日期和名稱；還沒定名就顯示「未定名」
+function sessionLabel(s) {
+  if (!s) return '';
+  return `${s.event_date}　${s.title?.trim() || '（未定名）'}`;
+}
+
+/* ---------- 7. 登入檢查 ---------- */
 // 每個需要登入的頁面，一開始就呼叫 requireAuth()。
 // 沒登入就踢回登入頁；有登入就把畫面顯示出來並畫上方選單。
 async function requireAuth() {
@@ -120,7 +161,7 @@ function renderNav(email) {
   };
 }
 
-/* ---------- 6. 場次下拉選單（名單頁／報到頁共用） ---------- */
+/* ---------- 8. 場次下拉選單（名單頁／報到頁共用） ---------- */
 // 讀出所有場次填進 <select>，並記住上次選的場次（存在瀏覽器裡）
 async function loadSessionOptions(selectEl, storageKey = 'lastSessionId') {
   const { data, error } = await sb.from('sessions')
@@ -128,7 +169,7 @@ async function loadSessionOptions(selectEl, storageKey = 'lastSessionId') {
   if (error) { showError('讀取場次失敗', error); return []; }
 
   selectEl.innerHTML = '<option value="">— 請選擇場次 —</option>' +
-    data.map(s => `<option value="${s.id}">${esc(s.event_date)}　${esc(s.code)}　${esc(s.title)}</option>`).join('');
+    data.map(s => `<option value="${s.id}">${esc(sessionLabel(s))}</option>`).join('');
 
   const remembered = localStorage.getItem(storageKey);
   if (remembered && data.some(s => String(s.id) === remembered)) {
@@ -140,7 +181,7 @@ async function loadSessionOptions(selectEl, storageKey = 'lastSessionId') {
   return data;
 }
 
-/* ---------- 7. CSV 工具 ---------- */
+/* ---------- 9. CSV 工具 ---------- */
 
 // 把二維陣列變成 CSV 文字並讓瀏覽器下載
 // 前面加 ﻿ (BOM) 是為了讓 Excel 打開中文不會變亂碼

@@ -72,8 +72,15 @@ function renderRoster() {
       <span class="handle" title="拖曳排序">☰</span>
       <span class="seat">${r.seat_no ?? '-'}</span>
       <div class="grow">
-        <div class="name">${esc(r.participants?.name || '（找不到姓名）')}</div>
-        <div class="sub">${esc(r.ticket_id || '')}${r.checked_in ? '　✅ 已報到' : ''}</div>
+        <div class="name">${esc(r.participants?.name || '（找不到姓名）')}${
+          r.walk_in ? ' <span class="tag">現場</span>' : ''}</div>
+        <div class="sub">
+          ${esc(r.ticket_id || '')}${r.checked_in ? '　✅ 已報到' : ''}${r.no_show ? '　✗ 未到' : ''}
+        </div>
+        <select class="mini-select" data-entry="${i}">
+          ${ENTRY_TYPES.map(t =>
+            `<option value="${t}" ${r.entry_type === t ? 'selected' : ''}>${t}入場</option>`).join('')}
+        </select>
       </div>
       <div class="arrows">
         <button class="small" data-up="${i}" ${i === 0 ? 'disabled' : ''}>⬆</button>
@@ -86,6 +93,8 @@ function renderRoster() {
   $$('[data-up]', ul).forEach(b => b.onclick = () => move(+b.dataset.up, -1));
   $$('[data-down]', ul).forEach(b => b.onclick = () => move(+b.dataset.down, +1));
   $$('[data-remove]', ul).forEach(b => b.onclick = () => removeFromSession(+b.dataset.remove));
+  // 入場時段：選了就直接存
+  $$('[data-entry]', ul).forEach(s => s.onchange = () => changeEntryType(+s.dataset.entry, s.value));
 
   enableDrag(ul);
 }
@@ -97,6 +106,17 @@ function move(i, dir) {
   [roster[i], roster[j]] = [roster[j], roster[i]];   // 兩個互換位置
   renderRoster();
   scheduleRenumber();
+}
+
+/* ---------- 修改某個人的入場時段 ---------- */
+async function changeEntryType(i, entryType) {
+  const r = roster[i];
+  const { error } = await sb.from('attendance')
+    .update({ entry_type: entryType }).eq('id', r.id);
+  if (error) return showError('修改入場時段失敗', error);
+
+  r.entry_type = entryType;
+  toast(`${r.participants?.name} → ${entryType}入場`);
 }
 
 /* ---------- 電腦版拖曳排序 ---------- */
@@ -138,11 +158,13 @@ function scheduleRenumber() {
 }
 
 // 只挑出 attendance 這張表真正有的欄位（把 participants 那包拿掉才能寫回資料庫）
+// ⚠️ 這裡一定要列出全部欄位。少列的話，重新編號時那個欄位會被清成預設值。
 function pickRow(r) {
   return {
     id: r.id, session_id: r.session_id, participant_id: r.participant_id,
     seat_no: r.seat_no, ticket_id: r.ticket_id,
     checked_in: r.checked_in, checked_in_at: r.checked_in_at,
+    entry_type: r.entry_type, no_show: r.no_show, walk_in: r.walk_in,
   };
 }
 
@@ -221,11 +243,11 @@ function renderPeople() {
 $('#addSelectedBtn').addEventListener('click', async () => {
   const ids = $$('#peopleList input:checked').map(cb => cb.value);
   if (!ids.length) return toast('請先勾選要加入的人', 'err');
-  await addParticipants(ids);
+  await addParticipants(ids, $('#addEntryType').value);
 });
 
-// 共用：把一批 participant_id 接在名單最後面，然後全部重新編號
-async function addParticipants(participantIds) {
+// 共用：把一批 participant_id 接在名單最後面
+async function addParticipants(participantIds, entryType = '宣語') {
   const start = roster.length;
   const rows = participantIds.map((pid, k) => ({
     session_id: session.id,
@@ -233,6 +255,7 @@ async function addParticipants(participantIds) {
     seat_no: start + k + 1,
     ticket_id: makeTicket(session.code, start + k + 1),
     checked_in: false,
+    entry_type: entryType,
   }));
 
   const { error } = await sb.from('attendance').insert(rows);
@@ -257,7 +280,7 @@ $('#newPersonForm').addEventListener('submit', async (e) => {
   if (error) return showError('新增參與者失敗', error);
 
   allPeople.push(data);
-  await addParticipants([data.id]);
+  await addParticipants([data.id], $('#pEntryType').value);
   $('#newPersonForm').reset();
 });
 
@@ -286,20 +309,27 @@ $('#csvFile').addEventListener('change', async (e) => {
   // 第一行如果看起來像標題（含「姓名」），就跳過它
   if (rows.length && /姓名|name/i.test(rows[0][0])) rows = rows.slice(1);
 
-  csvRows = rows.map(r => ({
-    name: (r[0] || '').trim(),
-    checked_in: parseYes(r[1]),
-    checked_in_at: parseTimeCell(r[2], session.event_date),
-  })).filter(r => r.name);
+  csvRows = rows.map(r => {
+    // 第 4 欄的入場時段，寫「攜幼入場」或「攜幼」都認得；沒填就當宣語
+    const raw = (r[3] || '').trim();
+    const entry = ENTRY_TYPES.find(t => raw.includes(t)) || '宣語';
+    return {
+      name: (r[0] || '').trim(),
+      checked_in: parseYes(r[1]),
+      checked_in_at: parseTimeCell(r[2], session.event_date),
+      entry_type: entry,
+    };
+  }).filter(r => r.name);
 
   $('#csvPreview').innerHTML = `
     <p class="muted">讀到 <b>${csvRows.length}</b> 筆，前 5 筆預覽：</p>
     <div class="scroll-x"><table>
-      <tr><th>姓名</th><th>已報到</th><th>報到時間</th></tr>
+      <tr><th>姓名</th><th>已報到</th><th>報到時間</th><th>入場時段</th></tr>
       ${csvRows.slice(0, 5).map(r => `<tr>
         <td>${esc(r.name)}</td>
         <td>${r.checked_in ? '是' : '否'}</td>
         <td>${r.checked_in_at ? esc(fmtTime(r.checked_in_at)) : '（空白）'}</td>
+        <td>${esc(r.entry_type)}</td>
       </tr>`).join('')}
     </table></div>`;
 
@@ -351,6 +381,7 @@ $('#importBtn').addEventListener('click', async () => {
         ticket_id: makeTicket(session.code, seat),
         checked_in: r.checked_in,
         checked_in_at: r.checked_in ? r.checked_in_at : null,   // 沒報到就不要有時間
+        entry_type: r.entry_type,
       });
     });
 

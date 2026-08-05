@@ -19,24 +19,66 @@
 
     <div class="card" id="mainCard" hidden>
       <div class="row" style="align-items:center">
-        <div style="flex:2 1 160px">
+        <div style="flex:2 1 150px">
           <div class="muted">已報到 / 總數</div>
           <div class="stat-big"><span id="doneCount">0</span> / <span id="totalCount">0</span></div>
         </div>
-        <div style="flex:3 1 200px">
-          <input type="text" id="search" placeholder="輸入姓名或票號搜尋…">
+        <div style="flex:1 1 100px">
+          <div class="muted">未到</div>
+          <div class="stat-big" id="noShowCount">0</div>
         </div>
       </div>
       <div class="spacer"></div>
+      <input type="text" id="search" placeholder="輸入姓名或票號搜尋…">
+      <div class="spacer"></div>
       <div class="row">
-        <button id="allInBtn" class="secondary">全部標記已報到</button>
-        <button id="allOutBtn" class="secondary">全部取消報到</button>
+        <button id="modeBtn" class="secondary"></button>
+        <button id="filterBtn" class="secondary"></button>
+      </div>
+      <div class="spacer"></div>
+      <div class="row">
+        <button id="allInBtn" class="secondary small">全部標記已報到</button>
+        <button id="allOutBtn" class="secondary small">全部取消報到</button>
       </div>
     </div>
 
     <div class="card" id="listCard" hidden>
-      <p class="muted">點一下大方框就完成報到，再點一次可取消。點「時間」可以手動修改。</p>
+      <p class="muted">
+        ✓ 完成報到　✗ 標記未到　再點一次可取消。點時間可以手動修改。<br>
+        時間顏色：<span class="t-green">綠＝準時</span>
+        <span class="t-blue">藍＝13:20 後正常入場</span>
+        <span class="t-red">紅＝時間不符</span>
+      </p>
       <ul class="list" id="list"></ul>
+    </div>
+
+    <div class="card" id="walkInCard" hidden>
+      <details>
+        <summary>現場登記（非報名者臨時入場）</summary>
+        <div class="spacer"></div>
+        <p class="muted">登記後會直接算已報到，並標上「現場」以便事後追蹤實際參與人數。</p>
+        <form id="walkInForm">
+          <div class="row">
+            <div class="field">
+              <label for="wName">姓名</label>
+              <input type="text" id="wName" required>
+            </div>
+            <div class="field">
+              <label for="wEntryType">入場時段</label>
+              <select id="wEntryType">
+                <option value="特殊">特殊入場</option>
+                <option value="攜幼">攜幼入場</option>
+                <option value="宣語">宣語入場</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="wNote">備註（原因、聯絡方式…）</label>
+            <input type="text" id="wNote" placeholder="例：陪同長輩、臨時加入">
+          </div>
+          <button type="submit" class="btn-full">登記並完成報到</button>
+        </form>
+      </details>
     </div>
   </div>
 

@@ -124,12 +124,49 @@ li.drag-over { border-top: 3px solid var(--primary); }
   padding: 2px 6px; min-height: auto; border: 1px dashed var(--ok); border-radius: 6px;
 }
 
+/* 未到的 ✗ 方框（比報到的小一點，避免按錯） */
+.big-check.no {
+  width: 46px; height: 46px; font-size: 20px;
+  color: #c9ced6; border-color: var(--line);
+}
+.big-check.no.on { background: var(--err); border-color: var(--err); color: #fff; }
+
+/* 報到時間的顏色：綠＝準時、藍＝13:20 後正常、紅＝時間不符 */
+.t-green { color: var(--ok); border-color: var(--ok); }
+.t-blue  { color: var(--primary); border-color: var(--primary); }
+.t-red   { color: var(--err); border-color: var(--err); font-weight: 800; }
+
+/* 入場時段標籤 */
+.tag {
+  display: inline-block; padding: 1px 8px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; background: #eef1f5; color: var(--muted);
+  margin-right: 4px;
+}
+.tag-main    { background: #e6f4ee; color: #0f7a54; }
+.tag-child   { background: #fff2e0; color: #a35b00; }
+.tag-special { background: #ede8fd; color: #5b3fc4; }
+
+/* 名單頁每列的入場時段小選單 */
+.mini-select {
+  width: auto; padding: 3px 6px; font-size: 12px;
+  border: 1px solid var(--line); border-radius: 6px; margin-top: 4px; background: #fff;
+}
+
+/* 報到頁「僅編號」模式的大編號按鈕 */
+.seat-big {
+  background: #eef1f5; color: var(--text);
+  font-size: 22px; font-weight: 800; letter-spacing: 1px;
+  padding: 6px 16px; min-height: auto; border-radius: 10px;
+}
+
 /* ---------- 統計數字 ---------- */
 .stat-big { font-size: 28px; font-weight: 800; }
 .badge {
   background: var(--primary); color: #fff; border-radius: 999px;
   padding: 2px 10px; font-size: 13px; font-weight: 700;
+  flex: none; white-space: nowrap;
 }
+.badge-err { background: var(--err); }
 
 /* ---------- 提示訊息 ---------- */
 .toast {
