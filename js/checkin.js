@@ -71,7 +71,7 @@ $('#filterBtn').addEventListener('click', () => {
 });
 
 function updateToggleLabels() {
-  $('#modeBtn').textContent = hideNames ? '🙈 僅編號' : '👁 姓名';
+  $('#modeBtn').textContent = hideNames ? '🙈 票號' : '👁 姓名＋票號';
   $('#filterBtn').textContent =
     filterMode === 'all' ? '全部名單' : filterMode === '宣語' ? '宣語入場' : '其他入場';
 }
@@ -85,9 +85,13 @@ function render() {
 
   const kw = $('#search').value.trim().toLowerCase();
   const shown = rows
-    .filter(r => filterMode === 'all' ? true
-      : filterMode === '宣語' ? r.entry_type === '宣語'
-      : r.entry_type !== '宣語')                       // other = 攜幼 + 特殊
+    .filter(r => {
+      // 沒填時段的一律當成宣語（跟畫面上的標籤一致）
+      const t = r.entry_type || '宣語';
+      if (filterMode === 'all') return true;
+      if (filterMode === '宣語') return t === '宣語';
+      return t !== '宣語';                             // other = 攜幼 + 特殊
+    })
     .filter(r => !kw ||
       (r.participants?.name || '').toLowerCase().includes(kw) ||
       (r.ticket_id || '').toLowerCase().includes(kw));
@@ -107,6 +111,7 @@ function render() {
       <div class="grow">
         ${nameBlockHTML(r)}
         <div class="sub">
+          ${hideNames ? '' : esc(r.ticket_id || '') + '　'}
           <span class="tag tag-${entryClass(r.entry_type)}">${esc(r.entry_type || '宣語')}</span>
           ${r.walk_in ? '<span class="tag">現場</span>' : ''}
         </div>
@@ -124,17 +129,20 @@ function render() {
   });
 }
 
-// 模式一：座位號 + 姓名
-// 模式二：只有大大的座位號，點下去才顯示姓名
+// 模式一：姓名 + 票號（票號在下面那行）
+// 模式二：只有票號，點下去才顯示姓名
+// 兩個模式票號都看得到。
 function nameBlockHTML(r) {
   const name = esc(r.participants?.name || '（找不到姓名）');
+  const ticket = esc(r.ticket_id || `#${r.seat_no ?? '-'}`);
+
   if (!hideNames) {
     return `<div class="name"><span class="seat">${r.seat_no ?? '-'}</span> ${name}</div>`;
   }
   const open = revealed.has(String(r.id));
   return `<div class="name">
-    <button class="seat-big" data-reveal="${r.id}">${r.seat_no ?? '-'}</button>
-    ${open ? ` ${name}` : ''}
+    <button class="ticket-big" data-reveal="${r.id}">${ticket}</button>
+    ${open ? `<span class="revealed-name">${name}</span>` : ''}
   </div>`;
 }
 

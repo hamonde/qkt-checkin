@@ -152,12 +152,14 @@ li.drag-over { border-top: 3px solid var(--primary); }
   border: 1px solid var(--line); border-radius: 6px; margin-top: 4px; background: #fff;
 }
 
-/* 報到頁「僅編號」模式的大編號按鈕 */
-.seat-big {
+/* 報到頁「僅票號」模式的大票號按鈕 */
+.ticket-big {
   background: #eef1f5; color: var(--text);
-  font-size: 22px; font-weight: 800; letter-spacing: 1px;
-  padding: 6px 16px; min-height: auto; border-radius: 10px;
+  font-size: 18px; font-weight: 800; letter-spacing: .5px;
+  padding: 8px 14px; min-height: auto; border-radius: 10px;
+  font-variant-numeric: tabular-nums;
 }
+.revealed-name { margin-left: 8px; font-size: 17px; font-weight: 700; }
 
 /* ---------- 統計數字 ---------- */
 .stat-big { font-size: 28px; font-weight: 800; }
