@@ -69,15 +69,17 @@ function render() {
   }
 
   box.innerHTML = '<ul class="list">' + sessions.map(s =>
-    editingId === s.id ? editFormHTML(s) : rowHTML(s)
+    String(s.id) === editingId ? editFormHTML(s) : rowHTML(s)
   ).join('') + '</ul>';
 
   // 一般狀態的按鈕
-  $$('[data-edit]', box).forEach(b => b.onclick = () => { editingId = +b.dataset.edit; render(); });
+  // 注意：id 一律當成字串比較。資料庫的 id 可能是 UUID，
+  // 也可能是 bigint（Supabase 會用字串回傳），轉成數字會比對不到。
+  $$('[data-edit]', box).forEach(b => b.onclick = () => { editingId = b.dataset.edit; render(); });
   $$('[data-del]', box).forEach(b => b.onclick = () => deleteSession(b.dataset.del));
 
   // 修改狀態的按鈕
-  $$('[data-save]', box).forEach(b => b.onclick = () => saveEdit(+b.dataset.save));
+  $$('[data-save]', box).forEach(b => b.onclick = () => saveEdit(b.dataset.save));
   $$('[data-cancel]', box).forEach(b => b.onclick = () => { editingId = null; render(); });
 }
 
@@ -125,7 +127,7 @@ function editFormHTML(s) {
 
 /* ---------- 儲存修改 ---------- */
 async function saveEdit(id) {
-  const s = sessions.find(x => x.id === id);
+  const s = sessions.find(x => String(x.id) === String(id));
   const newCode = $('#e-code').value.trim();
   const codeChanged = newCode !== (s.code || '');
 
