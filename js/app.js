@@ -41,7 +41,15 @@ function toast(msg, type = 'ok') {
 // 錯誤統一處理：印到主控台（F12 可看細節）＋跳紅色提示
 function showError(prefix, error) {
   console.error(prefix, error);
-  toast(prefix + '：' + (error?.message || error), 'err');
+  const msg = String(error?.message || error);
+
+  // 連不上伺服器時，多半是 Supabase 免費專案閒置太久被自動暫停，
+  // 講清楚才不會誤以為是自己操作錯誤。
+  if (/fetch|network|load failed|timeout|connect/i.test(msg)) {
+    toast('連不上伺服器，請到 Supabase 後台確認專案是不是被暫停了', 'err');
+    return;
+  }
+  toast(prefix + '：' + msg, 'err');
 }
 
 /* ---------- 3. 時間格式 ---------- */
