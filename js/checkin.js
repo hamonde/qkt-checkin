@@ -79,9 +79,12 @@ function updateToggleLabels() {
 /* ---------- 畫出畫面 ---------- */
 function render() {
   // 上方統計看的是「整場」，不受篩選和搜尋影響
-  $('#doneCount').textContent = rows.filter(r => r.checked_in).length;
-  $('#totalCount').textContent = rows.length;
-  $('#noShowCount').textContent = rows.filter(r => r.no_show).length;
+  // 作廢的票不算在「總數」裡，另外獨立顯示
+  const active = rows.filter(r => !r.cancelled);
+  $('#doneCount').textContent = active.filter(r => r.checked_in).length;
+  $('#totalCount').textContent = active.length;
+  $('#noShowCount').textContent = active.filter(r => r.no_show).length;
+  $('#voidCount').textContent = rows.length - active.length;
 
   const kw = $('#search').value.trim().toLowerCase();
   const shown = rows
@@ -103,17 +106,20 @@ function render() {
   }
 
   ul.innerHTML = shown.map(r => `
-    <li class="checkin-item" data-id="${r.id}">
-      <button class="big-check ${r.checked_in ? 'on' : ''}" data-toggle="${r.id}">
-        ${r.checked_in ? '✓' : ''}
-      </button>
-      <button class="big-check no ${r.no_show ? 'on' : ''}" data-noshow="${r.id}">✗</button>
+    <li class="checkin-item ${r.cancelled ? 'cancelled' : ''}" data-id="${r.id}">
+      ${r.cancelled
+        ? '<span class="void-box">作廢</span>'      // 作廢的票不能報到，所以不給按鈕
+        : `<button class="big-check ${r.checked_in ? 'on' : ''}" data-toggle="${r.id}">
+             ${r.checked_in ? '✓' : ''}
+           </button>
+           <button class="big-check no ${r.no_show ? 'on' : ''}" data-noshow="${r.id}">✗</button>`}
       <div class="grow">
         ${nameBlockHTML(r)}
         <div class="sub">
           ${hideNames ? '' : esc(r.ticket_id || '') + '　'}
           <span class="tag tag-${entryClass(r.entry_type)}">${esc(r.entry_type || '宣語')}</span>
           ${r.walk_in ? '<span class="tag">現場</span>' : ''}
+          ${r.cancelled ? '<span class="tag tag-void">已作廢</span>' : ''}
         </div>
       </div>
       <div class="time-slot" data-slot="${r.id}">${r.checked_in ? timeButtonHTML(r) : ''}</div>
@@ -238,17 +244,19 @@ $('#allInBtn').addEventListener('click', () => bulk(true));
 $('#allOutBtn').addEventListener('click', () => bulk(false));
 
 async function bulk(checked) {
-  if (!rows.length) return;
+  const active = rows.filter(r => !r.cancelled);     // 作廢的票不動
+  if (!active.length) return;
   const word = checked ? '全部標記已報到' : '全部取消報到';
-  if (!confirm(`確定要把這場 ${rows.length} 個人${word}嗎？`)) return;
+  if (!confirm(`確定要把這場 ${active.length} 個人${word}嗎？（作廢的票不受影響）`)) return;
 
   // 補登舊場次時通常沒有精確時間，所以只標記「有到」不寫時間
   const patch = { checked_in: checked, checked_in_at: null, no_show: false };
 
-  const { error } = await sb.from('attendance').update(patch).eq('session_id', session.id);
+  const { error } = await sb.from('attendance').update(patch)
+    .eq('session_id', session.id).eq('cancelled', false);
   if (error) return showError(word + '失敗', error);
 
-  rows.forEach(r => Object.assign(r, patch));
+  active.forEach(r => Object.assign(r, patch));
   render();
   toast('已' + word);
 }

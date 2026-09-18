@@ -49,10 +49,10 @@ $('#sessionForm').addEventListener('submit', async (e) => {
 
 /* ---------- 列出所有場次 ---------- */
 async function loadSessions() {
-  // attendance(count) 會順便算出這場的名單有幾個人
+  // 順便帶回這場每張入場券是否作廢，用來算有效人數
   const { data, error } = await sb
     .from('sessions')
-    .select('*, attendance(count)')
+    .select('*, attendance(cancelled)')
     .order('event_date', { ascending: false });
 
   if (error) return showError('讀取場次失敗', error);
@@ -85,13 +85,15 @@ function render() {
 
 // 一般顯示的樣子
 function rowHTML(s) {
-  const joined = s.attendance?.[0]?.count ?? 0;
+  const list = s.attendance || [];
+  const voided = list.filter(a => a.cancelled).length;
+  const joined = list.length - voided;
   const untitled = !s.title?.trim();
   return `<li>
     <div class="grow">
       <div class="name">${esc(s.event_date)}　${untitled
         ? '<span class="muted">（未定名）</span>' : esc(s.title)}</div>
-      <div class="sub">已報名 ${joined} 人　票號代碼 ${esc(s.code)}</div>
+      <div class="sub">已報名 ${joined} 人${voided ? `（另作廢 ${voided}）` : ''}　票號代碼 ${esc(s.code)}</div>
     </div>
     <a class="btn-plain" href="roster.html?session=${s.id}">名單</a>
     <a class="btn-plain" href="checkin.html?session=${s.id}">報到</a>

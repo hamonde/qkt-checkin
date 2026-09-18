@@ -169,6 +169,17 @@ li.drag-over { border-top: 3px solid var(--primary); }
   flex: none; white-space: nowrap;
 }
 .badge-err { background: var(--err); }
+.badge-void { background: #8a94a3; }
+
+/* 作廢的入場券：整列變淡、姓名劃線，一眼看得出來不能用 */
+li.cancelled { opacity: .55; }
+li.cancelled .name { text-decoration: line-through; }
+.tag-void { background: #e4e7ec; color: #555f6d; text-decoration: none; }
+.void-box {
+  flex: none; width: 110px; height: 56px; border-radius: 14px;
+  border: 2px dashed #b5bcc6; color: #6b7684; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
 
 /* ---------- 提示訊息 ---------- */
 .toast {

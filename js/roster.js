@@ -59,7 +59,8 @@ async function loadRoster() {
 
 /* ---------- 畫出名單 ---------- */
 function renderRoster() {
-  $('#countBadge').textContent = roster.length + ' 人';
+  const voided = roster.filter(r => r.cancelled).length;
+  $('#countBadge').textContent = (roster.length - voided) + ' 人' + (voided ? `（另作廢 ${voided}）` : '');
   const ul = $('#rosterList');
 
   if (!roster.length) {
@@ -68,12 +69,13 @@ function renderRoster() {
   }
 
   ul.innerHTML = roster.map((r, i) => `
-    <li draggable="true" data-index="${i}">
+    <li draggable="true" data-index="${i}" class="${r.cancelled ? 'cancelled' : ''}">
       <span class="handle" title="拖曳排序">☰</span>
       <span class="seat">${r.seat_no ?? '-'}</span>
       <div class="grow">
         <div class="name">${esc(r.participants?.name || '（找不到姓名）')}${
-          r.walk_in ? ' <span class="tag">現場</span>' : ''}</div>
+          r.walk_in ? ' <span class="tag">現場</span>' : ''}${
+          r.cancelled ? ' <span class="tag tag-void">已作廢</span>' : ''}</div>
         <div class="sub">
           ${esc(r.ticket_id || '')}${r.checked_in ? '　✅ 已報到' : ''}${r.no_show ? '　✗ 未到' : ''}
         </div>
@@ -86,6 +88,7 @@ function renderRoster() {
         <button class="small" data-up="${i}" ${i === 0 ? 'disabled' : ''}>⬆</button>
         <button class="small" data-down="${i}" ${i === roster.length - 1 ? 'disabled' : ''}>⬇</button>
       </div>
+      <button class="small ${r.cancelled ? '' : 'secondary'}" data-void="${i}">${r.cancelled ? '恢復' : '作廢'}</button>
       <button class="small danger" data-remove="${i}">移除</button>
     </li>`).join('');
 
@@ -93,6 +96,7 @@ function renderRoster() {
   $$('[data-up]', ul).forEach(b => b.onclick = () => move(+b.dataset.up, -1));
   $$('[data-down]', ul).forEach(b => b.onclick = () => move(+b.dataset.down, +1));
   $$('[data-remove]', ul).forEach(b => b.onclick = () => removeFromSession(+b.dataset.remove));
+  $$('[data-void]', ul).forEach(b => b.onclick = () => toggleCancelled(+b.dataset.void));
   // 入場時段：選了就直接存
   $$('[data-entry]', ul).forEach(s => s.onchange = () => changeEntryType(+s.dataset.entry, s.value));
 
@@ -106,6 +110,32 @@ function move(i, dir) {
   [roster[i], roster[j]] = [roster[j], roster[i]];   // 兩個互換位置
   renderRoster();
   scheduleRenumber();
+}
+
+/* ---------- 作廢 / 恢復入場券 ---------- */
+// 作廢：票號、座位號都保留不動（不影響其他人的編號），只是標記成不能報到。
+// 跟「移除」不同：移除會把這筆刪掉，後面的人全部往前補號。
+async function toggleCancelled(i) {
+  const r = roster[i];
+  const name = r.participants?.name || '';
+  const next = !r.cancelled;
+  const ask = next
+    ? `確定要作廢「${name}」的入場券（${r.ticket_id}）嗎？\n\n票號會保留、其他人的編號不受影響，\n但這張票之後不能報到。`
+    : `要恢復「${name}」的入場券（${r.ticket_id}）嗎？`;
+  if (!confirm(ask)) return;
+
+  const patch = next
+    // 作廢時一併清掉報到／未到狀態，避免同一張票同時是兩種狀態
+    ? { cancelled: true, cancelled_at: new Date().toISOString(),
+        checked_in: false, checked_in_at: null, no_show: false }
+    : { cancelled: false, cancelled_at: null };
+
+  const { error } = await sb.from('attendance').update(patch).eq('id', r.id);
+  if (error) return showError(next ? '作廢失敗' : '恢復失敗', error);
+
+  Object.assign(r, patch);
+  renderRoster();
+  toast(next ? `已作廢 ${r.ticket_id}` : `已恢復 ${r.ticket_id}`);
 }
 
 /* ---------- 修改某個人的入場時段 ---------- */
@@ -165,6 +195,7 @@ function pickRow(r) {
     seat_no: r.seat_no, ticket_id: r.ticket_id,
     checked_in: r.checked_in, checked_in_at: r.checked_in_at,
     entry_type: r.entry_type, no_show: r.no_show, walk_in: r.walk_in,
+    cancelled: r.cancelled, cancelled_at: r.cancelled_at,
   };
 }
 
