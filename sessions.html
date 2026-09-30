@@ -5,80 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>場次｜講座報到系統</title>
   <!-- 加入主畫面後以獨立 App 的樣子開啟（不會跳回瀏覽器） -->
-  <link rel="manifest" href="manifest.json?v=20261001d">
+  <link rel="manifest" href="manifest.json?v=20261001e">
   <meta name="theme-color" content="#14213D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="報到系統">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001d">
-  <link rel="stylesheet" href="css/styles.css?v=20261001d">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001e">
+  <link rel="stylesheet" href="css/styles.css?v=20261001e">
 </head>
 <body class="loading">
   <nav id="nav"></nav>
 
   <div class="wrap">
-    <h1>場次管理</h1>
+    <h1>所有場次</h1>
+
+    <a href="session-new.html" class="btn-full btn-link">＋ 新增場次</a>
 
     <div class="card">
-      <h2>新增場次</h2>
-      <form id="sessionForm">
-        <div class="row">
-          <div class="field">
-            <label for="code">場次代碼 code</label>
-            <input type="text" id="code" placeholder="例：0801" required>
-          </div>
-          <div class="field">
-            <label for="event_date">日期（可以填過去的日期）</label>
-            <input type="date" id="event_date" required>
-          </div>
-        </div>
-        <div class="row">
-          <div class="field" style="flex:3 1 200px">
-            <label for="title">講座名稱（還沒確定可以先留空，之後再補）</label>
-            <input type="text" id="title" placeholder="未定名">
-          </div>
-          <div class="field" style="flex:1 1 120px">
-            <label for="format">活動形式</label>
-            <select id="format">
-              <option value="線下">線下</option>
-              <option value="線上">線上</option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="xuanyu_deadline">宣語入場截止</label>
-            <input type="time" id="xuanyu_deadline" value="12:50">
-          </div>
-          <div class="field">
-            <label for="other_open">攜幼／特殊開放入場</label>
-            <input type="time" id="other_open" value="13:15">
-          </div>
-        </div>
-        <label class="check-line">
-          <input type="checkbox" id="noOther">
-          這場沒有攜幼／特殊入場時段
-        </label>
-        <p class="muted" style="margin-top:0">
-          報到時間的顏色會依這兩個時間判斷。不同時段的活動（例如上午場）直接改成該場的時間即可。<br>
-          沒有攜幼分流的活動（例如線上活動），勾選上面那一欄即可，
-          這場的攜幼、特殊入場就不會做時間判斷。
-        </p>
-        <button type="submit" class="btn-full" id="saveBtn">新增場次</button>
-      </form>
-      <p class="muted">票號會長這樣：<code id="ticketPreview">XYT-PRE-0801-01</code></p>
-    </div>
-
-    <div class="card">
-      <h2>所有場次</h2>
       <div id="list" class="muted">載入中…</div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261001d"></script>
-  <script src="js/app.js?v=20261001d"></script>
-  <script src="js/sessions.js?v=20261001d"></script>
+  <script src="js/config.js?v=20261001e"></script>
+  <script src="js/app.js?v=20261001e"></script>
+  <script src="js/sessions.js?v=20261001e"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 /* =========================================================
-   sessions.js —— 場次頁
-   功能：新增場次、列出所有場次、修改場次資訊、刪除場次
+   sessions.js —— 場次列表頁
+   功能：列出所有場次、修改場次資訊、刪除場次
+   「新增場次」獨立在 session-new.html（js/session-new.js）。
 
    註：場次代碼（code）只用來產生票號，畫面上的場次標題不顯示它。
        講座名稱可以先留空（報名常常比定名還早），之後用「修改」補上。
@@ -13,62 +14,8 @@ let editingId = null;      // 目前正在修改哪一場（null = 沒有）
 (async () => {
   user = await requireAuth();
   if (!user) return;
-
-  $('#event_date').valueAsDate = new Date();
-
-  // 一邊打 code，一邊預覽票號長怎樣
-  $('#code').addEventListener('input', () => {
-    $('#ticketPreview').textContent = makeTicket($('#code').value.trim() || '0801', 1);
-  });
-
-  bindNoOther($('#noOther'), $('#other_open'));
   loadSessions();
 })();
-
-/* ---------- 「這場沒有攜幼時段」勾選框 ---------- */
-// 手機的時間選擇器是滾輪，沒辦法清空，所以用勾選框代替「留空」。
-// 勾起來時把時間欄位變灰、不能操作，存檔時就存 null。
-function syncNoOther(check, input) {
-  if (!check || !input) return;
-  input.disabled = check.checked;
-  input.style.opacity = check.checked ? '.4' : '';
-}
-function bindNoOther(check, input) {
-  if (!check || !input) return;
-  check.onchange = () => syncNoOther(check, input);
-  syncNoOther(check, input);
-}
-
-/* ---------- 新增場次 ---------- */
-$('#sessionForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = $('#saveBtn');
-  btn.disabled = true;
-
-  const payload = {
-    code: $('#code').value.trim(),
-    title: $('#title').value.trim() || null,      // 留空就先不填
-    event_date: $('#event_date').value,
-    xuanyu_deadline: $('#xuanyu_deadline').value || null,
-    other_open: $('#noOther').checked ? null : ($('#other_open').value || null),
-    format: $('#format').value,
-  };
-
-  const { error } = await sb.from('sessions').insert(payload);
-  btn.disabled = false;
-
-  if (error) return showError('新增場次失敗', error);
-
-  toast('已新增場次');
-  $('#sessionForm').reset();
-  $('#event_date').valueAsDate = new Date();
-  $('#xuanyu_deadline').value = DEFAULT_XUANYU_DEADLINE;
-  $('#other_open').value = DEFAULT_OTHER_OPEN;
-  $('#noOther').checked = false;
-  syncNoOther($('#noOther'), $('#other_open'));
-  $('#format').value = '線下';
-  loadSessions();
-});
 
 /* ---------- 列出所有場次 ---------- */
 async function loadSessions() {
@@ -87,7 +34,7 @@ async function loadSessions() {
 function render() {
   const box = $('#list');
   if (!sessions.length) {
-    box.innerHTML = '<p class="muted">還沒有任何場次，先在上面新增一場吧。</p>';
+    box.innerHTML = '<p class="muted">還沒有任何場次，按上面的「＋ 新增場次」建立第一場。</p>';
     return;
   }
 

@@ -178,6 +178,20 @@ function colorHint(color, session) {
   }[color] || '';
 }
 
+/* ---------- 「這場沒有攜幼時段」勾選框 ---------- */
+// 手機的時間選擇器是滾輪，沒辦法清空，所以用勾選框代替「留空」。
+// 勾起來時把時間欄位變灰、不能操作，存檔時就存 null。
+function syncNoOther(check, input) {
+  if (!check || !input) return;
+  input.disabled = check.checked;
+  input.style.opacity = check.checked ? '.4' : '';
+}
+function bindNoOther(check, input) {
+  if (!check || !input) return;
+  check.onchange = () => syncNoOther(check, input);
+  syncNoOther(check, input);
+}
+
 /* ---------- 7. 場次標題 ---------- */
 // 場次代碼不放進標題，只顯示日期和名稱；還沒定名就顯示「未定名」
 function sessionLabel(s) {
@@ -203,7 +217,8 @@ async function requireAuth() {
 function renderNav(email) {
   const nav = $('#nav');
   if (!nav) return;
-  const page = location.pathname.split('/').pop() || 'index.html';
+  let page = location.pathname.split('/').pop() || 'index.html';
+  if (page === 'session-new.html') page = 'sessions.html';   // 新增場次頁算在「場次」底下
   const links = [
     ['sessions.html', '場次'],
     ['roster.html', '名單'],
