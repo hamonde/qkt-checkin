@@ -198,6 +198,13 @@ li.cancelled .name { text-decoration: line-through; }
 .login-wrap { max-width: 380px; margin: 10vh auto; padding: 0 16px; }
 .login-wrap h1 { text-align: center; }
 
+.check-line {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  padding: 10px 2px; margin-bottom: 8px; cursor: pointer;
+}
+.check-line input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+
 details summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }

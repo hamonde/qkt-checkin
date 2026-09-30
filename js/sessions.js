@@ -21,8 +21,23 @@ let editingId = null;      // 目前正在修改哪一場（null = 沒有）
     $('#ticketPreview').textContent = makeTicket($('#code').value.trim() || '0801', 1);
   });
 
+  bindNoOther($('#noOther'), $('#other_open'));
   loadSessions();
 })();
+
+/* ---------- 「這場沒有攜幼時段」勾選框 ---------- */
+// 手機的時間選擇器是滾輪，沒辦法清空，所以用勾選框代替「留空」。
+// 勾起來時把時間欄位變灰、不能操作，存檔時就存 null。
+function syncNoOther(check, input) {
+  if (!check || !input) return;
+  input.disabled = check.checked;
+  input.style.opacity = check.checked ? '.4' : '';
+}
+function bindNoOther(check, input) {
+  if (!check || !input) return;
+  check.onchange = () => syncNoOther(check, input);
+  syncNoOther(check, input);
+}
 
 /* ---------- 新增場次 ---------- */
 $('#sessionForm').addEventListener('submit', async (e) => {
@@ -35,7 +50,7 @@ $('#sessionForm').addEventListener('submit', async (e) => {
     title: $('#title').value.trim() || null,      // 留空就先不填
     event_date: $('#event_date').value,
     xuanyu_deadline: $('#xuanyu_deadline').value || null,
-    other_open: $('#other_open').value || null,
+    other_open: $('#noOther').checked ? null : ($('#other_open').value || null),
     format: $('#format').value,
   };
 
@@ -49,6 +64,8 @@ $('#sessionForm').addEventListener('submit', async (e) => {
   $('#event_date').valueAsDate = new Date();
   $('#xuanyu_deadline').value = DEFAULT_XUANYU_DEADLINE;
   $('#other_open').value = DEFAULT_OTHER_OPEN;
+  $('#noOther').checked = false;
+  syncNoOther($('#noOther'), $('#other_open'));
   $('#format').value = '線下';
   loadSessions();
 });
@@ -86,6 +103,7 @@ function render() {
 
   // 修改狀態的按鈕
   $$('[data-save]', box).forEach(b => b.onclick = () => saveEdit(b.dataset.save));
+  bindNoOther($('#e-noOther'), $('#e-open'));
   $$('[data-cancel]', box).forEach(b => b.onclick = () => { editingId = null; render(); });
 }
 
@@ -146,10 +164,14 @@ function editFormHTML(s) {
         <input type="time" id="e-deadline" value="${esc(t.deadlineText)}">
       </div>
       <div class="field">
-        <label>攜幼／特殊開放入場（沒有就留空）</label>
-        <input type="time" id="e-open" value="${esc(t.openText)}">
+        <label>攜幼／特殊開放入場</label>
+        <input type="time" id="e-open" value="${esc(t.openText || DEFAULT_OTHER_OPEN)}">
       </div>
     </div>
+    <label class="check-line">
+      <input type="checkbox" id="e-noOther" ${t.hasOther ? '' : 'checked'}>
+      這場沒有攜幼／特殊入場時段
+    </label>
     <p class="muted">改了代碼之後，這場名單的票號會全部重新產生一次。</p>
     <div class="row">
       <button class="small" data-save="${s.id}">儲存</button>
@@ -169,7 +191,7 @@ async function saveEdit(id) {
     code: newCode,
     title: $('#e-title').value.trim() || null,
     xuanyu_deadline: $('#e-deadline').value || null,
-    other_open: $('#e-open').value || null,
+    other_open: $('#e-noOther').checked ? null : ($('#e-open').value || null),
     format: $('#e-format').value,
   };
 
