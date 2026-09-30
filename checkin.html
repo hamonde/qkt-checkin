@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>報到｜講座報到系統</title>
   <!-- 加入主畫面後以獨立 App 的樣子開啟（不會跳回瀏覽器） -->
-  <link rel="manifest" href="manifest.json?v=20261001a">
+  <link rel="manifest" href="manifest.json?v=20261001b">
   <meta name="theme-color" content="#14213D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="報到系統">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001a">
-  <link rel="stylesheet" href="css/styles.css?v=20261001a">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001b">
+  <link rel="stylesheet" href="css/styles.css?v=20261001b">
 </head>
 <body class="loading">
   <nav id="nav"></nav>
@@ -74,11 +74,12 @@
               <input type="text" id="wName" required>
             </div>
             <div class="field">
-              <label for="wEntryType">入場時段</label>
+              <label for="wEntryType">入場時段（可不選）</label>
               <select id="wEntryType">
                 <option value="特殊">特殊入場</option>
                 <option value="攜幼">攜幼入場</option>
                 <option value="宣語">宣語入場</option>
+                <option value="">不分時段</option>
               </select>
             </div>
           </div>
@@ -93,8 +94,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261001a"></script>
-  <script src="js/app.js?v=20261001a"></script>
-  <script src="js/checkin.js?v=20261001a"></script>
+  <script src="js/config.js?v=20261001b"></script>
+  <script src="js/app.js?v=20261001b"></script>
+  <script src="js/checkin.js?v=20261001b"></script>
 </body>
 </html>

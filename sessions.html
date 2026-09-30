@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>場次｜講座報到系統</title>
   <!-- 加入主畫面後以獨立 App 的樣子開啟（不會跳回瀏覽器） -->
-  <link rel="manifest" href="manifest.json?v=20261001a">
+  <link rel="manifest" href="manifest.json?v=20261001b">
   <meta name="theme-color" content="#14213D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="報到系統">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001a">
-  <link rel="stylesheet" href="css/styles.css?v=20261001a">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001b">
+  <link rel="stylesheet" href="css/styles.css?v=20261001b">
 </head>
 <body class="loading">
   <nav id="nav"></nav>
@@ -33,9 +33,18 @@
             <input type="date" id="event_date" required>
           </div>
         </div>
-        <div class="field">
-          <label for="title">講座名稱（還沒確定可以先留空，之後再補）</label>
-          <input type="text" id="title" placeholder="未定名">
+        <div class="row">
+          <div class="field" style="flex:3 1 200px">
+            <label for="title">講座名稱（還沒確定可以先留空，之後再補）</label>
+            <input type="text" id="title" placeholder="未定名">
+          </div>
+          <div class="field" style="flex:1 1 120px">
+            <label for="format">活動形式</label>
+            <select id="format">
+              <option value="線下">線下</option>
+              <option value="線上">線上</option>
+            </select>
+          </div>
         </div>
         <div class="row">
           <div class="field">
@@ -49,6 +58,7 @@
         </div>
         <p class="muted" style="margin-top:0">
           報到時間的顏色會依這兩個時間判斷。不同時段的活動（例如上午場）直接改成該場的時間即可。
+          線上活動不做時間判斷，這兩欄可以不用管。
         </p>
         <button type="submit" class="btn-full" id="saveBtn">新增場次</button>
       </form>
@@ -62,8 +72,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261001a"></script>
-  <script src="js/app.js?v=20261001a"></script>
-  <script src="js/sessions.js?v=20261001a"></script>
+  <script src="js/config.js?v=20261001b"></script>
+  <script src="js/app.js?v=20261001b"></script>
+  <script src="js/sessions.js?v=20261001b"></script>
 </body>
 </html>

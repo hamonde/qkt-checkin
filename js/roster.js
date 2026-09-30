@@ -38,7 +38,12 @@ function onSessionChange(sessions) {
   ['#rosterCard', '#addCard', '#newCard', '#importCard'].forEach(sel => {
     $(sel).hidden = !session;
   });
-  if (session) loadRoster();
+  if (session) {
+    // 線上活動沒有入場分流，預設就選「不分時段」
+    $('#addEntryType').value = isOnline(session) ? '' : '宣語';
+    $('#pEntryType').value = isOnline(session) ? '' : '宣語';
+    loadRoster();
+  }
 }
 
 /* ---------- 讀取這場名單 ---------- */
@@ -82,6 +87,7 @@ function renderRoster() {
         <select class="mini-select" data-entry="${i}">
           ${ENTRY_TYPES.map(t =>
             `<option value="${t}" ${r.entry_type === t ? 'selected' : ''}>${t}入場</option>`).join('')}
+          <option value="" ${ENTRY_TYPES.includes(r.entry_type) ? '' : 'selected'}>不分時段</option>
         </select>
       </div>
       <div class="arrows">
@@ -141,12 +147,13 @@ async function toggleCancelled(i) {
 /* ---------- 修改某個人的入場時段 ---------- */
 async function changeEntryType(i, entryType) {
   const r = roster[i];
+  const value = entryValue(entryType);            // 選「不分時段」時存 null
   const { error } = await sb.from('attendance')
-    .update({ entry_type: entryType }).eq('id', r.id);
+    .update({ entry_type: value }).eq('id', r.id);
   if (error) return showError('修改入場時段失敗', error);
 
-  r.entry_type = entryType;
-  toast(`${r.participants?.name} → ${entryType}入場`);
+  r.entry_type = value;
+  toast(`${r.participants?.name} → ${entryLabel(value)}${value ? '入場' : ''}`);
 }
 
 /* ---------- 電腦版拖曳排序 ---------- */
@@ -278,7 +285,7 @@ $('#addSelectedBtn').addEventListener('click', async () => {
 });
 
 // 共用：把一批 participant_id 接在名單最後面
-async function addParticipants(participantIds, entryType = '宣語') {
+async function addParticipants(participantIds, entryType) {
   const start = roster.length;
   const rows = participantIds.map((pid, k) => ({
     session_id: session.id,
@@ -286,7 +293,7 @@ async function addParticipants(participantIds, entryType = '宣語') {
     seat_no: start + k + 1,
     ticket_id: makeTicket(session.code, start + k + 1),
     checked_in: false,
-    entry_type: entryType,
+    entry_type: entryValue(entryType),
   }));
 
   const { error } = await sb.from('attendance').insert(rows);
@@ -343,7 +350,8 @@ $('#csvFile').addEventListener('change', async (e) => {
   csvRows = rows.map(r => {
     // 第 4 欄的入場時段，寫「攜幼入場」或「攜幼」都認得；沒填就當宣語
     const raw = (r[3] || '').trim();
-    const entry = ENTRY_TYPES.find(t => raw.includes(t)) || '宣語';
+    // 沒填的話：線上活動當「不分時段」，線下活動沿用宣語
+    const entry = ENTRY_TYPES.find(t => raw.includes(t)) || (isOnline(session) ? null : '宣語');
     return {
       name: (r[0] || '').trim(),
       checked_in: parseYes(r[1]),
@@ -360,7 +368,7 @@ $('#csvFile').addEventListener('change', async (e) => {
         <td>${esc(r.name)}</td>
         <td>${r.checked_in ? '是' : '否'}</td>
         <td>${r.checked_in_at ? esc(fmtTime(r.checked_in_at)) : '（空白）'}</td>
-        <td>${esc(r.entry_type)}</td>
+        <td>${esc(entryLabel(r.entry_type))}</td>
       </tr>`).join('')}
     </table></div>`;
 

@@ -89,8 +89,29 @@ function makeTicket(sessionCode, seatNo) {
   return `${TICKET_PREFIX}${sessionCode}-${String(seatNo).padStart(2, '0')}`;
 }
 
-/* ---------- 5. 入場時段 ---------- */
+/* ---------- 5. 活動形式 ---------- */
+const SESSION_FORMATS = ['線下', '線上'];
+
+// 場次沒設定形式時，一律當成線下
+function sessionFormat(s) {
+  return SESSION_FORMATS.includes(s?.format) ? s.format : '線下';
+}
+function isOnline(s) {
+  return sessionFormat(s) === '線上';
+}
+
+/* ---------- 6. 入場時段 ---------- */
 const ENTRY_TYPES = ['宣語', '攜幼', '特殊'];
+
+// 入場時段是「非必填」的：線上活動沒有攜幼、特殊的分流，整場都不用選。
+// 資料庫存 null 代表「不分時段」，這種情況報到時間不做顏色判斷。
+function entryLabel(t) {
+  return ENTRY_TYPES.includes(t) ? t : '不分';
+}
+// 表單的值（''）轉成資料庫的值（null）
+function entryValue(v) {
+  return ENTRY_TYPES.includes(v) ? v : null;
+}
 
 // 每一場都可以自己設定入場時間（在場次頁填）。
 // 沒有填的舊場次，就沿用下面這兩個預設值。
@@ -125,6 +146,7 @@ function sessionTimes(session) {
 // 特別規則：攜幼／特殊如果在宣語截止前就到，視同跟著宣語場入場，一樣給綠色。
 function checkinColor(entryType, checkedInAt, session) {
   if (!checkedInAt) return '';                 // 沒有精確時間就不判斷
+  if (!ENTRY_TYPES.includes(entryType)) return '';   // 不分時段 → 沒有時間限制，不判斷顏色
   const { deadline, open } = sessionTimes(session);
   const d = new Date(checkedInAt);
   const mins = d.getHours() * 60 + d.getMinutes();
@@ -148,14 +170,14 @@ function colorHint(color, session) {
   }[color] || '';
 }
 
-/* ---------- 6. 場次標題 ---------- */
+/* ---------- 7. 場次標題 ---------- */
 // 場次代碼不放進標題，只顯示日期和名稱；還沒定名就顯示「未定名」
 function sessionLabel(s) {
   if (!s) return '';
   return `${s.event_date}　${s.title?.trim() || '（未定名）'}`;
 }
 
-/* ---------- 7. 登入檢查 ---------- */
+/* ---------- 8. 登入檢查 ---------- */
 // 每個需要登入的頁面，一開始就呼叫 requireAuth()。
 // 沒登入就踢回登入頁；有登入就把畫面顯示出來並畫上方選單。
 async function requireAuth() {
@@ -195,7 +217,7 @@ function renderNav(email) {
   };
 }
 
-/* ---------- 8. 場次下拉選單（名單頁／報到頁共用） ---------- */
+/* ---------- 9. 場次下拉選單（名單頁／報到頁共用） ---------- */
 // 讀出所有場次填進 <select>，並記住上次選的場次（存在瀏覽器裡）
 async function loadSessionOptions(selectEl, storageKey = 'lastSessionId') {
   const { data, error } = await sb.from('sessions')
@@ -215,7 +237,7 @@ async function loadSessionOptions(selectEl, storageKey = 'lastSessionId') {
   return data;
 }
 
-/* ---------- 9. CSV 工具 ---------- */
+/* ---------- 10. CSV 工具 ---------- */
 
 // 把二維陣列變成 CSV 文字並讓瀏覽器下載
 // 前面加 ﻿ (BOM) 是為了讓 Excel 打開中文不會變亂碼

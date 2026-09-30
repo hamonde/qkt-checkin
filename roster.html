@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>名單｜講座報到系統</title>
   <!-- 加入主畫面後以獨立 App 的樣子開啟（不會跳回瀏覽器） -->
-  <link rel="manifest" href="manifest.json?v=20261001a">
+  <link rel="manifest" href="manifest.json?v=20261001b">
   <meta name="theme-color" content="#14213D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="報到系統">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001a">
-  <link rel="stylesheet" href="css/styles.css?v=20261001a">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001b">
+  <link rel="stylesheet" href="css/styles.css?v=20261001b">
 </head>
 <body class="loading">
   <nav id="nav"></nav>
@@ -51,11 +51,12 @@
       <div id="peopleList" class="scroll-x" style="max-height:260px;overflow-y:auto"></div>
       <div class="spacer"></div>
       <div class="field">
-        <label for="addEntryType">這批人的入場時段</label>
+        <label for="addEntryType">這批人的入場時段（線上活動可選「不分時段」）</label>
         <select id="addEntryType">
           <option value="宣語">宣語入場</option>
           <option value="攜幼">攜幼入場</option>
           <option value="特殊">特殊入場</option>
+          <option value="">不分時段（線上活動）</option>
         </select>
       </div>
       <button id="addSelectedBtn" class="btn-full">把勾選的人加入這場</button>
@@ -86,11 +87,12 @@
             <input type="text" id="pnote" placeholder="例：素食、輪椅、第一次參加">
           </div>
           <div class="field">
-            <label for="pEntryType">入場時段</label>
+            <label for="pEntryType">入場時段（可不選）</label>
             <select id="pEntryType">
               <option value="宣語">宣語入場</option>
               <option value="攜幼">攜幼入場</option>
               <option value="特殊">特殊入場</option>
+              <option value="">不分時段（線上活動）</option>
             </select>
           </div>
         </div>
@@ -126,8 +128,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261001a"></script>
-  <script src="js/app.js?v=20261001a"></script>
-  <script src="js/roster.js?v=20261001a"></script>
+  <script src="js/config.js?v=20261001b"></script>
+  <script src="js/app.js?v=20261001b"></script>
+  <script src="js/roster.js?v=20261001b"></script>
 </body>
 </html>

@@ -39,6 +39,10 @@ function onSessionChange(sessions) {
 
 // 顏色說明會顯示這場實際設定的入場時間
 function renderLegend() {
+  if (isOnline(session)) {                    // 線上活動沒有入場分流，不做時間判斷
+    $('#colorLegend').innerHTML = '<span class="muted">線上活動：報到時間不做顏色判斷。</span>';
+    return;
+  }
   const { deadlineText, openText } = sessionTimes(session);
   $('#colorLegend').innerHTML =
     `時間顏色：<span class="t-green">綠＝${deadlineText} 前準時</span>　` +
@@ -98,11 +102,9 @@ function render() {
   const kw = $('#search').value.trim().toLowerCase();
   const shown = rows
     .filter(r => {
-      // 沒填時段的一律當成宣語（跟畫面上的標籤一致）
-      const t = r.entry_type || '宣語';
       if (filterMode === 'all') return true;
-      if (filterMode === '宣語') return t === '宣語';
-      return t !== '宣語';                             // other = 攜幼 + 特殊
+      if (filterMode === '宣語') return r.entry_type === '宣語';
+      return r.entry_type !== '宣語';                  // other = 攜幼 + 特殊 + 不分
     })
     .filter(r => !kw ||
       (r.participants?.name || '').toLowerCase().includes(kw) ||
@@ -126,7 +128,7 @@ function render() {
         ${nameBlockHTML(r)}
         <div class="sub">
           ${hideNames ? '' : esc(r.ticket_id || '') + '　'}
-          <span class="tag tag-${entryClass(r.entry_type)}">${esc(r.entry_type || '宣語')}</span>
+          <span class="tag tag-${entryClass(r.entry_type)}">${esc(entryLabel(r.entry_type))}</span>
           ${r.walk_in ? '<span class="tag">現場</span>' : ''}
           ${r.cancelled ? '<span class="tag tag-void">已作廢</span>' : ''}
         </div>
@@ -162,13 +164,14 @@ function nameBlockHTML(r) {
 }
 
 function entryClass(t) {
-  return t === '攜幼' ? 'child' : t === '特殊' ? 'special' : 'main';
+  return t === '攜幼' ? 'child' : t === '特殊' ? 'special'
+       : t === '宣語' ? 'main' : 'none';        // none = 不分時段
 }
 
 // 已報到的人右邊那顆時間按鈕，顏色依照入場時段自動判斷
 function timeButtonHTML(r) {
   if (!r.checked_in_at) return `<button class="time-btn" data-time="${r.id}">補時間</button>`;
-  const color = checkinColor(r.entry_type || '宣語', r.checked_in_at, session);
+  const color = checkinColor(r.entry_type, r.checked_in_at, session);
   return `<button class="time-btn t-${color}" data-time="${r.id}" title="${esc(colorHint(color, session))}">
     ${esc(fmtTime(r.checked_in_at, session.event_date))}
   </button>`;
@@ -289,7 +292,7 @@ $('#walkInForm').addEventListener('submit', async (e) => {
       participant_id: person.id,
       seat_no: seat,
       ticket_id: makeTicket(session.code, seat),
-      entry_type: $('#wEntryType').value,
+      entry_type: entryValue($('#wEntryType').value),
       checked_in: true,
       checked_in_at: new Date().toISOString(),
       walk_in: true,

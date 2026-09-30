@@ -145,6 +145,9 @@ li.drag-over { border-top: 3px solid var(--primary); }
 .tag-main    { background: #e6f4ee; color: #0f7a54; }
 .tag-child   { background: #fff2e0; color: #a35b00; }
 .tag-special { background: #ede8fd; color: #5b3fc4; }
+.tag-none    { background: #eef1f5; color: #6b7684; }
+.tag-online  { background: #e3f0ff; color: #1b5fb8; }
+.tag-offline { background: #eef1f5; color: #4a5462; }
 
 /* 名單頁每列的入場時段小選單 */
 .mini-select {
