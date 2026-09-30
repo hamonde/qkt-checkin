@@ -103,8 +103,8 @@ function isOnline(s) {
 /* ---------- 6. 入場時段 ---------- */
 const ENTRY_TYPES = ['宣語', '攜幼', '特殊'];
 
-// 入場時段是「非必填」的：線上活動沒有攜幼、特殊的分流，整場都不用選。
-// 資料庫存 null 代表「不分時段」，這種情況報到時間不做顏色判斷。
+// 入場時段一律是宣語／攜幼／特殊三選一。
+// （資料庫允許空值，是為了保險；萬一真的是空的就顯示「不分」，不判斷顏色。）
 function entryLabel(t) {
   return ENTRY_TYPES.includes(t) ? t : '不分';
 }
@@ -132,11 +132,18 @@ function minutesToTime(mins) {
   return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 }
 
-// 取得這場的兩個時間界線；場次沒設定就用預設值
+// 取得這場的兩個時間界線。
+// 宣語截止：沒設定就用預設值。
+// 攜幼／特殊開放：可以留空（open = null），代表這場沒有攜幼分流，不判斷顏色。
 function sessionTimes(session) {
   const deadline = timeToMinutes(session?.xuanyu_deadline) ?? timeToMinutes(DEFAULT_XUANYU_DEADLINE);
-  const open     = timeToMinutes(session?.other_open)      ?? timeToMinutes(DEFAULT_OTHER_OPEN);
-  return { deadline, open, deadlineText: minutesToTime(deadline), openText: minutesToTime(open) };
+  const open     = timeToMinutes(session?.other_open);      // 留空就是 null
+  return {
+    deadline, open,
+    deadlineText: minutesToTime(deadline),
+    openText: open === null ? '' : minutesToTime(open),
+    hasOther: open !== null,                                // 這場有沒有攜幼／特殊時段
+  };
 }
 
 // 判斷報到時間跟他的入場時段合不合，回傳顏色：
@@ -155,6 +162,7 @@ function checkinColor(entryType, checkedInAt, session) {
     return mins <= deadline ? 'green' : 'red';            // 截止時間後算遲到
   }
   // 攜幼／特殊
+  if (open === null) return '';                           // 這場沒設攜幼時段 → 不限時間，不判斷
   if (mins <= deadline) return 'green';                   // 提前到，跟宣語一起入場
   if (mins >= open) return 'blue';                        // 正常時段
   return 'red';                                            // 還不能入場的空檔
@@ -165,7 +173,7 @@ function colorHint(color, session) {
   const { deadlineText, openText } = sessionTimes(session);
   return {
     green: `準時（${deadlineText} 前完成報到）`,
-    blue: `正常入場（${openText} 後完成報到）`,
+    blue: openText ? `正常入場（${openText} 後完成報到）` : '正常入場',
     red: '時間不符',
   }[color] || '';
 }

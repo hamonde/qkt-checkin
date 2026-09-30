@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>場次｜講座報到系統</title>
   <!-- 加入主畫面後以獨立 App 的樣子開啟（不會跳回瀏覽器） -->
-  <link rel="manifest" href="manifest.json?v=20261001b">
+  <link rel="manifest" href="manifest.json?v=20261001c">
   <meta name="theme-color" content="#14213D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="報到系統">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001b">
-  <link rel="stylesheet" href="css/styles.css?v=20261001b">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20261001c">
+  <link rel="stylesheet" href="css/styles.css?v=20261001c">
 </head>
 <body class="loading">
   <nav id="nav"></nav>
@@ -52,13 +52,14 @@
             <input type="time" id="xuanyu_deadline" value="12:50">
           </div>
           <div class="field">
-            <label for="other_open">攜幼／特殊開放入場</label>
+            <label for="other_open">攜幼／特殊開放入場（沒有就留空）</label>
             <input type="time" id="other_open" value="13:15">
           </div>
         </div>
         <p class="muted" style="margin-top:0">
-          報到時間的顏色會依這兩個時間判斷。不同時段的活動（例如上午場）直接改成該場的時間即可。
-          線上活動不做時間判斷，這兩欄可以不用管。
+          報到時間的顏色會依這兩個時間判斷。不同時段的活動（例如上午場）直接改成該場的時間即可。<br>
+          沒有攜幼分流的活動（例如線上活動），把「攜幼／特殊開放入場」清空即可，
+          這場的攜幼、特殊入場就不會做時間判斷。
         </p>
         <button type="submit" class="btn-full" id="saveBtn">新增場次</button>
       </form>
@@ -72,8 +73,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/config.js?v=20261001b"></script>
-  <script src="js/app.js?v=20261001b"></script>
-  <script src="js/sessions.js?v=20261001b"></script>
+  <script src="js/config.js?v=20261001c"></script>
+  <script src="js/app.js?v=20261001c"></script>
+  <script src="js/sessions.js?v=20261001c"></script>
 </body>
 </html>

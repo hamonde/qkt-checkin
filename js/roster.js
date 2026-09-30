@@ -38,12 +38,7 @@ function onSessionChange(sessions) {
   ['#rosterCard', '#addCard', '#newCard', '#importCard'].forEach(sel => {
     $(sel).hidden = !session;
   });
-  if (session) {
-    // 線上活動沒有入場分流，預設就選「不分時段」
-    $('#addEntryType').value = isOnline(session) ? '' : '宣語';
-    $('#pEntryType').value = isOnline(session) ? '' : '宣語';
-    loadRoster();
-  }
+  if (session) loadRoster();
 }
 
 /* ---------- 讀取這場名單 ---------- */
@@ -87,7 +82,6 @@ function renderRoster() {
         <select class="mini-select" data-entry="${i}">
           ${ENTRY_TYPES.map(t =>
             `<option value="${t}" ${r.entry_type === t ? 'selected' : ''}>${t}入場</option>`).join('')}
-          <option value="" ${ENTRY_TYPES.includes(r.entry_type) ? '' : 'selected'}>不分時段</option>
         </select>
       </div>
       <div class="arrows">
@@ -285,7 +279,7 @@ $('#addSelectedBtn').addEventListener('click', async () => {
 });
 
 // 共用：把一批 participant_id 接在名單最後面
-async function addParticipants(participantIds, entryType) {
+async function addParticipants(participantIds, entryType = '宣語') {
   const start = roster.length;
   const rows = participantIds.map((pid, k) => ({
     session_id: session.id,
@@ -350,8 +344,7 @@ $('#csvFile').addEventListener('change', async (e) => {
   csvRows = rows.map(r => {
     // 第 4 欄的入場時段，寫「攜幼入場」或「攜幼」都認得；沒填就當宣語
     const raw = (r[3] || '').trim();
-    // 沒填的話：線上活動當「不分時段」，線下活動沿用宣語
-    const entry = ENTRY_TYPES.find(t => raw.includes(t)) || (isOnline(session) ? null : '宣語');
+    const entry = ENTRY_TYPES.find(t => raw.includes(t)) || '宣語';
     return {
       name: (r[0] || '').trim(),
       checked_in: parseYes(r[1]),

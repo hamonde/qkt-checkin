@@ -103,9 +103,8 @@ function rowHTML(s) {
         ? '<span class="muted">（未定名）</span>' : esc(s.title)}
         <span class="tag tag-${online ? 'online' : 'offline'}">${esc(sessionFormat(s))}</span></div>
       <div class="sub">已報名 ${joined} 人${voided ? `（另作廢 ${voided}）` : ''}　票號代碼 ${esc(s.code)}</div>
-      <div class="sub">${online ? '線上活動，不分入場時段'
-        : `入場 ${esc(t.deadlineText)} / ${esc(t.openText)}${
-            s.xuanyu_deadline || s.other_open ? '' : '（預設）'}`}</div>
+      <div class="sub">入場 ${esc(t.deadlineText)}${
+        t.hasOther ? ` / ${esc(t.openText)}` : '（無攜幼時段）'}</div>
     </div>
     <a class="btn-plain" href="roster.html?session=${s.id}">名單</a>
     <a class="btn-plain" href="checkin.html?session=${s.id}">報到</a>
@@ -147,7 +146,7 @@ function editFormHTML(s) {
         <input type="time" id="e-deadline" value="${esc(t.deadlineText)}">
       </div>
       <div class="field">
-        <label>攜幼／特殊開放入場</label>
+        <label>攜幼／特殊開放入場（沒有就留空）</label>
         <input type="time" id="e-open" value="${esc(t.openText)}">
       </div>
     </div>

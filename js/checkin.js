@@ -39,15 +39,15 @@ function onSessionChange(sessions) {
 
 // 顏色說明會顯示這場實際設定的入場時間
 function renderLegend() {
-  if (isOnline(session)) {                    // 線上活動沒有入場分流，不做時間判斷
-    $('#colorLegend').innerHTML = '<span class="muted">線上活動：報到時間不做顏色判斷。</span>';
-    return;
-  }
-  const { deadlineText, openText } = sessionTimes(session);
+  const { deadlineText, openText, hasOther } = sessionTimes(session);
+  const blue = hasOther
+    ? `<span class="t-blue">藍＝${openText} 後正常入場</span>　`
+    : '';
+  const note = hasOther ? '' : '<br><span class="muted">這場沒有攜幼／特殊時段，這兩種入場不做時間判斷。</span>';
   $('#colorLegend').innerHTML =
     `時間顏色：<span class="t-green">綠＝${deadlineText} 前準時</span>　` +
-    `<span class="t-blue">藍＝${openText} 後正常入場</span>　` +
-    `<span class="t-red">紅＝時間不符</span>`;
+    blue +
+    `<span class="t-red">紅＝時間不符</span>` + note;
 }
 
 /* ---------- 讀取這場的人 ---------- */
