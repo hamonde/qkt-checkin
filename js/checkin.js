@@ -34,7 +34,16 @@ const revealed = new Set();      // 模式二時，被點開看姓名的人
 function onSessionChange(sessions) {
   session = sessions.find(s => String(s.id) === String($('#sessionSelect').value)) || null;
   ['#mainCard', '#listCard', '#walkInCard'].forEach(x => { $(x).hidden = !session; });
-  if (session) load();
+  if (session) { renderLegend(); load(); }
+}
+
+// 顏色說明會顯示這場實際設定的入場時間
+function renderLegend() {
+  const { deadlineText, openText } = sessionTimes(session);
+  $('#colorLegend').innerHTML =
+    `時間顏色：<span class="t-green">綠＝${deadlineText} 前準時</span>　` +
+    `<span class="t-blue">藍＝${openText} 後正常入場</span>　` +
+    `<span class="t-red">紅＝時間不符</span>`;
 }
 
 /* ---------- 讀取這場的人 ---------- */
@@ -159,8 +168,8 @@ function entryClass(t) {
 // 已報到的人右邊那顆時間按鈕，顏色依照入場時段自動判斷
 function timeButtonHTML(r) {
   if (!r.checked_in_at) return `<button class="time-btn" data-time="${r.id}">補時間</button>`;
-  const color = checkinColor(r.entry_type || '宣語', r.checked_in_at);
-  return `<button class="time-btn t-${color}" data-time="${r.id}" title="${esc(COLOR_HINT[color] || '')}">
+  const color = checkinColor(r.entry_type || '宣語', r.checked_in_at, session);
+  return `<button class="time-btn t-${color}" data-time="${r.id}" title="${esc(colorHint(color, session))}">
     ${esc(fmtTime(r.checked_in_at, session.event_date))}
   </button>`;
 }

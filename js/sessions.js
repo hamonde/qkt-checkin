@@ -34,6 +34,8 @@ $('#sessionForm').addEventListener('submit', async (e) => {
     code: $('#code').value.trim(),
     title: $('#title').value.trim() || null,      // 留空就先不填
     event_date: $('#event_date').value,
+    xuanyu_deadline: $('#xuanyu_deadline').value || null,
+    other_open: $('#other_open').value || null,
   };
 
   const { error } = await sb.from('sessions').insert(payload);
@@ -44,6 +46,8 @@ $('#sessionForm').addEventListener('submit', async (e) => {
   toast('已新增場次');
   $('#sessionForm').reset();
   $('#event_date').valueAsDate = new Date();
+  $('#xuanyu_deadline').value = DEFAULT_XUANYU_DEADLINE;
+  $('#other_open').value = DEFAULT_OTHER_OPEN;
   loadSessions();
 });
 
@@ -85,6 +89,7 @@ function render() {
 
 // 一般顯示的樣子
 function rowHTML(s) {
+  const t = sessionTimes(s);
   const list = s.attendance || [];
   const voided = list.filter(a => a.cancelled).length;
   const joined = list.length - voided;
@@ -94,6 +99,8 @@ function rowHTML(s) {
       <div class="name">${esc(s.event_date)}　${untitled
         ? '<span class="muted">（未定名）</span>' : esc(s.title)}</div>
       <div class="sub">已報名 ${joined} 人${voided ? `（另作廢 ${voided}）` : ''}　票號代碼 ${esc(s.code)}</div>
+      <div class="sub">入場 ${esc(t.deadlineText)} / ${esc(t.openText)}${
+        s.xuanyu_deadline || s.other_open ? '' : '（預設）'}</div>
     </div>
     <a class="btn-plain" href="roster.html?session=${s.id}">名單</a>
     <a class="btn-plain" href="checkin.html?session=${s.id}">報到</a>
@@ -104,6 +111,7 @@ function rowHTML(s) {
 
 // 按下「修改」後展開的表單
 function editFormHTML(s) {
+  const t = sessionTimes(s);
   return `<li style="display:block">
     <div class="row">
       <div class="field">
@@ -118,6 +126,16 @@ function editFormHTML(s) {
     <div class="field">
       <label>講座名稱（可留空）</label>
       <input type="text" id="e-title" value="${esc(s.title || '')}" placeholder="未定名">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>宣語入場截止</label>
+        <input type="time" id="e-deadline" value="${esc(t.deadlineText)}">
+      </div>
+      <div class="field">
+        <label>攜幼／特殊開放入場</label>
+        <input type="time" id="e-open" value="${esc(t.openText)}">
+      </div>
     </div>
     <p class="muted">改了代碼之後，這場名單的票號會全部重新產生一次。</p>
     <div class="row">
@@ -137,6 +155,8 @@ async function saveEdit(id) {
     event_date: $('#e-date').value,
     code: newCode,
     title: $('#e-title').value.trim() || null,
+    xuanyu_deadline: $('#e-deadline').value || null,
+    other_open: $('#e-open').value || null,
   };
 
   const { error } = await sb.from('sessions').update(patch).eq('id', id);

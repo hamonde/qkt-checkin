@@ -92,35 +92,61 @@ function makeTicket(sessionCode, seatNo) {
 /* ---------- 5. 入場時段 ---------- */
 const ENTRY_TYPES = ['宣語', '攜幼', '特殊'];
 
-// 兩個時間界線（想調整時間就改這裡，全站一起生效）
-const T_XUANYU_DEADLINE = 12 * 60 + 50;   // 12:50 宣語入場的最晚報到時間
-const T_OTHER_OPEN      = 13 * 60 + 15;   // 13:15 攜幼／特殊入場開放報到
+// 每一場都可以自己設定入場時間（在場次頁填）。
+// 沒有填的舊場次，就沿用下面這兩個預設值。
+const DEFAULT_XUANYU_DEADLINE = '12:50';   // 宣語入場的最晚報到時間
+const DEFAULT_OTHER_OPEN      = '13:15';   // 攜幼／特殊入場開放報到的時間
+
+// 把 "12:50" 或資料庫回傳的 "12:50:00" 換算成「從 0 點算起的分鐘數」，方便比大小
+function timeToMinutes(t) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t ?? '').trim());
+  if (!m) return null;
+  const h = +m[1], mi = +m[2];
+  if (h > 23 || mi > 59) return null;
+  return h * 60 + mi;
+}
+
+// 反過來：770 → "12:50"（顯示用）
+function minutesToTime(mins) {
+  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+}
+
+// 取得這場的兩個時間界線；場次沒設定就用預設值
+function sessionTimes(session) {
+  const deadline = timeToMinutes(session?.xuanyu_deadline) ?? timeToMinutes(DEFAULT_XUANYU_DEADLINE);
+  const open     = timeToMinutes(session?.other_open)      ?? timeToMinutes(DEFAULT_OTHER_OPEN);
+  return { deadline, open, deadlineText: minutesToTime(deadline), openText: minutesToTime(open) };
+}
 
 // 判斷報到時間跟他的入場時段合不合，回傳顏色：
-//   green = 準時（宣語 12:50 前完成）
-//   blue  = 攜幼／特殊在 13:15 之後正常報到
-//   red   = 時間不符（宣語遲到，或攜幼／特殊在 12:50~13:15 這段還不能入場時報到）
-// 特別規則：攜幼／特殊如果 12:50 前就到，視同跟著宣語場入場，一樣給綠色。
-function checkinColor(entryType, checkedInAt) {
+//   green = 準時（宣語在截止時間前完成）
+//   blue  = 攜幼／特殊在開放時間之後正常報到
+//   red   = 時間不符（宣語遲到，或攜幼／特殊在還不能入場的空檔報到）
+// 特別規則：攜幼／特殊如果在宣語截止前就到，視同跟著宣語場入場，一樣給綠色。
+function checkinColor(entryType, checkedInAt, session) {
   if (!checkedInAt) return '';                 // 沒有精確時間就不判斷
+  const { deadline, open } = sessionTimes(session);
   const d = new Date(checkedInAt);
   const mins = d.getHours() * 60 + d.getMinutes();
 
   if (entryType === '宣語') {
-    return mins <= T_XUANYU_DEADLINE ? 'green' : 'red';   // 12:50 後算遲到
+    return mins <= deadline ? 'green' : 'red';            // 截止時間後算遲到
   }
   // 攜幼／特殊
-  if (mins <= T_XUANYU_DEADLINE) return 'green';          // 提前到，跟宣語一起入場
-  if (mins >= T_OTHER_OPEN) return 'blue';                // 正常時段
+  if (mins <= deadline) return 'green';                   // 提前到，跟宣語一起入場
+  if (mins >= open) return 'blue';                        // 正常時段
   return 'red';                                            // 還不能入場的空檔
 }
 
-// 顏色對應的說明文字（滑鼠移上去會看到）
-const COLOR_HINT = {
-  green: '準時（12:50 前完成報到）',
-  blue: '正常入場（13:15 後完成報到）',
-  red: '時間不符',
-};
+// 顏色對應的說明文字（滑鼠移上去會看到），會帶入這場實際設定的時間
+function colorHint(color, session) {
+  const { deadlineText, openText } = sessionTimes(session);
+  return {
+    green: `準時（${deadlineText} 前完成報到）`,
+    blue: `正常入場（${openText} 後完成報到）`,
+    red: '時間不符',
+  }[color] || '';
+}
 
 /* ---------- 6. 場次標題 ---------- */
 // 場次代碼不放進標題，只顯示日期和名稱；還沒定名就顯示「未定名」
